@@ -24,7 +24,7 @@ class Player(pg.sprite.Sprite):
         self.jumping = sorted(os.listdir('data/player/jumping/right'), key=lambda x: int(re.search(r'\d+', x).group()))
         self.attacking = sorted(os.listdir('data/player/attaking/right'), key=lambda x: int(re.search(r'\d+', x).group()))
 
-    def update(self, *args):
+    def update(self, tilemap):
         self.rect.x += self.dx
         
         if not (self.onground):
@@ -33,16 +33,19 @@ class Player(pg.sprite.Sprite):
         self.rect.y += self.dy
         self.onground = False
 
-        if self.rect.y > args[0]:
-            self.rect.y = args[0]
-            self.dy = 0
-            self.onground = True
-            self.jump = False
+        for tile in tilemap.tile_list:
+            if tile[1].colliderect(self.rect.x, self.rect.y + 1, self.rect.width, self.rect.height):
+                self.rect.y = tile[1].y - self.rect.height
+                self.dy = 0
+                self.onground = True
+                self.jump = False
         
         if self.right:
             file = 'right/'
         if self.left:
             file = 'left/'
+        else:
+            file = 'right/'
 
         if self.attack:
             self.frame += 0.2
