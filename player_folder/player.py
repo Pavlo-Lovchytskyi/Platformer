@@ -1,15 +1,13 @@
-import settings
 import os
 import re
 import pygame as pg
-
 
 class Player(pg.sprite.Sprite):
     def __init__(self, x, y, file):
         pg.sprite.Sprite.__init__(self)
 
         self.image = pg.image.load(file).convert_alpha()
-        self.rect = self.image.get_rect(center = (x, y))
+        self.rect = self.image.get_rect(center=(x, y))
         self.dx = 0
         self.dy = 0
         self.onground = False
@@ -22,24 +20,20 @@ class Player(pg.sprite.Sprite):
         self.running = sorted(os.listdir('data/player/running/right'), key=lambda x: int(re.search(r'\d+', x).group()))
         self.holding = sorted(os.listdir('data/player/holding/right'), key=lambda x: int(re.search(r'\d+', x).group()))
         self.jumping = sorted(os.listdir('data/player/jumping/right'), key=lambda x: int(re.search(r'\d+', x).group()))
-        self.attacking = sorted(os.listdir('data/player/attaking/right'), key=lambda x: int(re.search(r'\d+', x).group()))
+        self.attacking = sorted(os.listdir('data/player/attacking/right'), key=lambda x: int(re.search(r'\d+', x).group()))
 
-    def update(self, tilemap, camera_x, camera_y):
+    def update(self, tilemap):
         self.rect.x += self.dx
+        self.check_collision_x(tilemap)
         
-        if not (self.onground):
-            self.dy += 1
-        
+        if not self.onground:
+            self.dy += 1.5
+
         self.rect.y += self.dy
         self.onground = False
-  
-        for tile in tilemap.tile_list:
-            if tile[1].colliderect(self.rect.x, self.rect.y + 1, self.rect.width, self.rect.height):
-                self.rect.y = tile[1].y - self.rect.height
-                self.dy = 0
-                self.onground = True
-                self.jump = False
-        
+
+        self.check_collision_y(tilemap)
+
         if self.right:
             file = 'right/'
         if self.left:
@@ -53,7 +47,7 @@ class Player(pg.sprite.Sprite):
                 self.attack = False
                 self.frame = 0
             else:
-                self.image = pg.image.load('data/player/attaking/' + file + self.attacking[int(self.frame)]).convert_alpha()
+                self.image = pg.image.load('data/player/attacking/' + file + self.attacking[int(self.frame)]).convert_alpha()
         elif not self.jump:
             if self.move:
                 self.frame += 0.2
@@ -75,3 +69,24 @@ class Player(pg.sprite.Sprite):
             self.image = pg.image.load('data/player/jumping/' + file + self.jumping[int(self.frame)]).convert_alpha()
 
         self.dx = 0
+
+    def check_collision_x(self, tilemap):
+        for tile in tilemap.tile_list:
+            if tile[1].colliderect(self.rect.x + self.dx, self.rect.y, self.rect.width, self.rect.height):
+                if self.dx > 0:
+                    self.rect.x = tile[1].x - self.rect.width
+                elif self.dx < 0:
+                    self.rect.x = tile[1].x + tile[1].width
+                self.dx = 0
+
+    def check_collision_y(self, tilemap):
+        for tile in tilemap.tile_list:
+            if tile[1].colliderect(self.rect.x, self.rect.y + self.dy, self.rect.width, self.rect.height):
+                if self.dy > 0:
+                    self.rect.y = tile[1].y - self.rect.height
+                    self.onground = True
+                    self.dy = 0
+                    self.jump = False
+                elif self.dy < 0:
+                    self.rect.y = tile[1].y + tile[1].height
+                    self.dy = 0

@@ -6,8 +6,6 @@ screen = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
 class World():
 	def __init__(self, data):
 		self.tile_list = []
-
-		#load images
 		dirt_img = pygame.image.load('data/textures/Tile.png')
 		dirt2_img = pygame.image.load('data/textures/Tile_2.png')
 
@@ -37,6 +35,3 @@ class World():
 		for tile in self.tile_list:
 			tile_img, tile_rect = tile
 			screen.blit(tile_img, (tile_rect.x - camera_x, tile_rect.y - camera_y))		
-	# def draw(self):
-	# 	for tile in self.tile_list:
-	# 		screen.blit(tile[0], tile[1])
