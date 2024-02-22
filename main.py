@@ -1,7 +1,7 @@
 import pygame as pg
 import settings
 from player_folder.player import Player
-from game_map_folder.game_map import game_map_data
+from game_map_folder.game_map import level
 from game_map_folder.mapping import World
 from camera_folder.camera import Camera
 
@@ -19,10 +19,10 @@ pg.mixer.music.play(-1)
 dirt_image = pg.image.load("data/textures/Tile.png").convert_alpha()
 clock = pg.time.Clock()
 
-                  
 player = Player(50, settings.HEIGHT - 100, "data/textures/Tile.png")
-world = World(game_map_data)
-camera = Camera(settings.WIDTH, settings.HEIGHT)
+camera = Camera(settings.WIDTH, settings.HEIGHT, len(level[0]), len(level))
+world = World(level)
+
 
 running = True
 
@@ -56,14 +56,17 @@ while running:
     if key[pg.K_SPACE]:
         player.attack = True
 
-    player.update(world) #settings.HEIGHT - player.rect.height
 
-    camera.set_target(player)
-    camera.update(player)
+    player.update(world)
 
-    screen.blit(background, (0, 0)) # отрисовка заднего фона
-    world.draw()
-    screen.blit(player.image, camera.apply(player)) #screen.blit(player.image, player.rect) # отрисовка персонажа
+    camera.update(player.rect)
+
+    # Отрисовка заднего фона
+    screen.blit(background, (0, 0)) # screen.blit(background, (-camera.camera_x, -camera.camera_y)) для движения заднего фона
+    # Отрисовка тайлов
+    world.draw(camera.camera_x, camera.camera_y)
+    # Отрисовка персонажа
+    screen.blit(player.image, camera.apply(player.rect))
 
     pg.display.update()
     clock.tick(60)

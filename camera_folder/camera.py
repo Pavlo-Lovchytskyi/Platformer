@@ -1,49 +1,27 @@
 import pygame as pg
 import settings
 
-
 class Camera:
-    def __init__(self, width, height):
+    def __init__(self, width, height, level_width, level_height):
         self.width = width
         self.height = height
-        #self.target = None
-        self.camera = pg.Rect(0, 0, width, height)
+        self.level_width = level_width * settings.TILE_SIZE
+        self.level_height = level_height * settings.TILE_SIZE
 
-    def set_target(self, target):
-        self.target = target
+        self.camera_x = 0
+        self.camera_y = 0
 
-    def apply(self, target): #entity
-        return target.rect.move(self.camera.topleft) #return entity.rect.move(self.camera.topleft)
+    def update(self, target_rect):
+        # Следование за игроком по оси X
+        self.camera_x = target_rect.x - self.width // 2
+        # Ограничение координат камеры, чтобы не выходить за пределы карты
+        self.camera_x = max(0, min(self.camera_x, self.level_width - self.width))
 
-    def update(self, target):
-        if self.target:
-            x = -target.rect.x + settings.WIDTH / 2
-            y = -target.rect.y + settings.HEIGHT / 2
+        # Следование за игроком по оси Y
+        self.camera_y = target_rect.y - self.height // 2
+        # Ограничение координат камеры, чтобы не выходить за пределы карты
+        self.camera_y = max(0, min(self.camera_y, self.level_height - self.height))
 
-            x = min(0, x)
-            y = min(0, y)
-            x = max(-(self.width - settings.WIDTH), x)
-            y = max(-(self.height - settings.HEIGHT), y)
-
-            self.camera = pg.Rect(x, y, self.width, self.height)
-# class Camera:
-#     def __init__(self, width, height):
-#         self.camera = pg.Rect(0, 0, width, height)
-#         self.width = width
-#         self.height = height
-
-#     def apply(self, target):
-#         return target.rect.move(self.camera.topleft)
-
-#     def update(self, target):
-#         x = -target.rect.x + settings.WIDTH // 2
-#         y = -target.rect.y + settings.HEIGHT // 2
-
-#         # Limit scrolling to the boundaries of the map
-#         x = min(0, x)  # left
-#         y = min(0, y)  # top
-#         x = max(-(self.width - settings.WIDTH), x)  # right
-#         y = max(-(self.height - settings.HEIGHT), y)  # bottom
-
-#         self.camera = pg.Rect(x, y, self.width, self.height)
-
+    def apply(self, entity_rect):
+        # Перевод координат объекта из координат мира в координаты камеры
+        return entity_rect.x - self.camera_x, entity_rect.y - self.camera_y
