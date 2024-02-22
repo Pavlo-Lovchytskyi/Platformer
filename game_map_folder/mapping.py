@@ -32,6 +32,11 @@ class World():
 				col_count += 1
 			row_count += 1
 
-	def draw(self):
+
+	def draw(self, camera_x, camera_y):
 		for tile in self.tile_list:
-			screen.blit(tile[0], tile[1])
+			tile_img, tile_rect = tile
+			screen.blit(tile_img, (tile_rect.x - camera_x, tile_rect.y - camera_y))		
+	# def draw(self):
+	# 	for tile in self.tile_list:
+	# 		screen.blit(tile[0], tile[1])

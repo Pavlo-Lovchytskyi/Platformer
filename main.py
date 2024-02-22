@@ -1,9 +1,8 @@
 import pygame as pg
 import settings
 from player_folder.player import Player
-from game_map_folder.game_map import game_map_data
+from game_map_folder.game_map import level
 from game_map_folder.mapping import World
-from camera_folder.camera import Camera
 
 pg.init()
 
@@ -19,10 +18,11 @@ pg.mixer.music.play(-1)
 dirt_image = pg.image.load("data/textures/Tile.png").convert_alpha()
 clock = pg.time.Clock()
 
-                  
 player = Player(50, settings.HEIGHT - 100, "data/textures/Tile.png")
-world = World(game_map_data)
-camera = Camera(settings.WIDTH, settings.HEIGHT)
+camera_x = 0
+camera_y = 0
+world = World(level)
+
 
 running = True
 
@@ -56,14 +56,26 @@ while running:
     if key[pg.K_SPACE]:
         player.attack = True
 
-    player.update(world) #settings.HEIGHT - player.rect.height
 
-    camera.set_target(player)
-    camera.update(player)
+    player.update(world, camera_x, camera_y)
 
-    screen.blit(background, (0, 0)) # отрисовка заднего фона
-    world.draw()
-    screen.blit(player.image, camera.apply(player)) #screen.blit(player.image, player.rect) # отрисовка персонажа
+    if player.rect.right > settings.WIDTH / 2:
+        camera_x += player.dx
+        # Предотвращение выхода за пределы карты вправо
+        if camera_x > (len(level[0]) * settings.TILE_SIZE) - settings.WIDTH:
+            camera_x = (len(level[0]) * settings.TILE_SIZE) - settings.WIDTH
+    camera_x = player.rect.x - settings.WIDTH // 2
+    camera_y = player.rect.y - settings.HEIGHT // 2
+    # Ограничение координат камеры, чтобы не выходить за пределы карты
+    camera_x = max(0, min(camera_x, (len(level[0]) - settings.WIDTH // settings.TILE_SIZE) * settings.TILE_SIZE))
+    camera_y = max(0, min(camera_y, (len(level) - settings.HEIGHT // settings.TILE_SIZE) * settings.TILE_SIZE))
+
+     # отрисовка заднего фона
+    screen.blit(background, (0, 0))
+    # отрисовка тайлов
+    world.draw(camera_x, camera_y)
+     # отрисовка персонажа
+    screen.blit(player.image, (player.rect.x - camera_x, player.rect.y - camera_y))
 
     pg.display.update()
     clock.tick(60)
